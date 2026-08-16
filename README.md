@@ -52,8 +52,9 @@ artifact của workflow run.
   từ trước. Đã bỏ plugin, dependency và các permission liên quan.
 - **Không commit thư viện native dựng sẵn.** `libGame.so` là engine GTA:SA của
   Rockstar; `tools/fetch-prebuilt.sh` tải về lúc build thay vì để trong repo.
-- **Đóng gói thêm `libGlossHook.so`.** CMake link nó dạng shared library nên
-  `libsamp.so` có `DT_NEEDED` trỏ tới, nhưng upstream không chép vào `jniLibs`.
+- **Sửa 2 lỗi `#include` sai hoa/thường** (`playerTabList.h` → `playertablist.h`,
+  `RGBA.h` → `rgba.h`). Upstream code trên hệ thống không phân biệt hoa thường
+  nên không thấy; trên Linux là build hỏng ngay từ file đầu tiên.
 - **Sửa icon app.** Manifest đang trỏ `android:icon` vào lớp nền của adaptive
   icon thay vì chính icon, và thiếu `roundIcon`.
 - **Dọn repository Gradle chết** (Splunk MINT, AppLovin, Sonatype snapshots).

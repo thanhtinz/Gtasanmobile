@@ -43,19 +43,23 @@ Cách này tiện khi bạn không muốn cài Android SDK, hoặc máy không p
 
 ## `tools/fetch-prebuilt.sh` làm gì
 
-Tải 7 thư viện native dựng sẵn từ upstream (pin theo commit, verify SHA-256) và
-chép thêm `libGlossHook.so` từ cây source vào `jniLibs/arm64-v8a/`:
+Tải 5 thư viện native dựng sẵn từ upstream vào `jniLibs/arm64-v8a/`, pin theo
+commit và verify SHA-256 từng file:
 
 | File | Vai trò |
 |---|---|
 | `libGame.so` | Engine GTA:SA Android đã patch — mọi hook trong `cpp/samp/game/hooks.cpp` tính offset dựa trên nó |
-| `libbass.so`, `libbass_ssl.so` | Audio (BASS), được CMake link trực tiếp |
-| `libGlossHook.so` | Thư viện hook, `libsamp.so` có `DT_NEEDED` trỏ tới |
 | `libopenal.so`, `libVendor_mpg123.so` | Audio |
 | `libc++_shared.so`, `libz.so` | Runtime mà `libGame.so` cần |
 
 Các file này **không nằm trong repo** và bị `.gitignore` chặn. Lý do: `libGame.so`
 là engine của Rockstar đã bị patch, không phải thứ chúng ta có quyền phát tán lại.
+
+**Vì sao không có `libbass.so` / `libGlossHook.so` ở đây:** những thư viện mà
+`cpp/samp/CMakeLists.txt` link theo đường dẫn thì Android Gradle Plugin tự đóng
+gói vào APK. Bỏ thêm một bản nữa vào `jniLibs` sẽ làm build fail với
+`DuplicateRelativeFileException: 2 files found with path lib/arm64-v8a/libbass.so`.
+Script tự dọn các bản thừa này nếu bạn đã chạy phiên bản script cũ.
 
 Cờ hữu ích:
 

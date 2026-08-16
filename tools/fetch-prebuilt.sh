@@ -19,7 +19,6 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="$ROOT/client/android/app/src/main/jniLibs/arm64-v8a"
-VENDOR="$ROOT/client/android/app/src/main/cpp/samp/vendor"
 
 # Pinned to kuzia15/SAMP-Mobile @ GTA-2.11. Bump this together with the hashes
 # below when pulling in a newer upstream client.
@@ -28,10 +27,18 @@ UPSTREAM_COMMIT="5e531514a0bbb3d56b1a72e51fa44b18cfaf2ee2"
 BASE_URL="https://raw.githubusercontent.com/${UPSTREAM_REPO}/${UPSTREAM_COMMIT}/app/src/main/jniLibs/arm64-v8a"
 
 # filename:sha256
+#
+# Only libraries that nothing else in the build produces belong here. Anything
+# cpp/samp/CMakeLists.txt links by path — libbass.so, libbass_ssl.so,
+# libGlossHook.so — is copied into the APK by the Android Gradle Plugin itself,
+# and fetching a second copy into jniLibs makes packaging fail with
+# "DuplicateRelativeFileException: 2 files found with path lib/arm64-v8a/...".
+#
+# libc++_shared.so is safe to ship: ANDROID_STL is unset, so AGP builds against
+# the default c++_static and never emits a shared libc++ of its own. If that
+# ever changes, this is the first entry to drop.
 LIBS=(
 	"libGame.so:4c6a7445e30b27afdda781302e4db9bac89c28fc1181b68b1eef16f84d6a282e"
-	"libbass.so:0d55ab1e670842904b29a6bf3643e8259a34814e81c2cc53db53dde3fc3291df"
-	"libbass_ssl.so:5deae657d58d15c39e658ae42442b8659773f2814132f5099f45fa0f14ea714a"
 	"libc++_shared.so:c4c2fe5cbcb1fba0003a31fc7ab29a9bb12df6cc187ec45a806462540e83d93b"
 	"libopenal.so:d49804fa74d9c4d5e311251e1b8f2428ea25ea6c2dd98121a8aaf5b49533695c"
 	"libVendor_mpg123.so:932ed9c1fa1df1d68283c019b0ef1f411e8732d77c1dabde0e358f956b6c784e"
@@ -91,24 +98,18 @@ for entry in "${LIBS[@]}"; do
 	missing=$((missing + 1))
 done
 
-# GlossHook is linked by cpp/samp/CMakeLists.txt as a shared library, so
-# libsamp.so records a DT_NEEDED entry for it — but upstream never copies it
-# into jniLibs, which leaves the APK one dlopen away from an
-# UnsatisfiedLinkError. It ships in the source tree under an ABI directory
-# named "ARM64" rather than "arm64-v8a", so Gradle cannot pick it up on its
-# own and it is copied here instead.
-GLOSS_SRC="$VENDOR/GlossHook/libs/ARM64/libGlossHook.so"
-if [ -f "$GLOSS_SRC" ]; then
-	if [ "$VERIFY_ONLY" = 1 ]; then
-		[ -f "$DEST/libGlossHook.so" ] || fail "libGlossHook.so is missing — run tools/fetch-prebuilt.sh"
-	elif [ ! -f "$DEST/libGlossHook.so" ] || [ "$FORCE" = 1 ] \
-		|| [ "$(hash_of "$GLOSS_SRC")" != "$(hash_of "$DEST/libGlossHook.so")" ]; then
-		say "copying libGlossHook.so from the vendored source tree"
-		cp -f "$GLOSS_SRC" "$DEST/libGlossHook.so"
+# Stale copies of the CMake-provided libraries would collide with the ones the
+# Android Gradle Plugin packages, so an older checkout that ran the previous
+# version of this script gets cleaned up rather than failing the next build.
+for stale in libbass.so libbass_ssl.so libGlossHook.so; do
+	if [ -f "$DEST/$stale" ]; then
+		if [ "$VERIFY_ONLY" = 1 ]; then
+			fail "$stale is in jniLibs but the build packages it from CMake — run tools/fetch-prebuilt.sh"
+		fi
+		say "removing $stale (packaged from the CMake build, not from jniLibs)"
+		rm -f "$DEST/$stale"
 	fi
-else
-	echo "warning: $GLOSS_SRC not found; skipping" >&2
-fi
+done
 
 if [ "$VERIFY_ONLY" = 1 ]; then
 	say "all prebuilt libraries present and verified"
