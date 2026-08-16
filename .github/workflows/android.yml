@@ -46,8 +46,6 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          build-root-directory: client/android
 
       - name: Build debug APK
         working-directory: client/android
@@ -81,6 +79,6 @@ jobs:
         with:
           name: native-build-logs
           path: |
-            client/android/app/.cxx/**/*.txt
+            client/android/app/.cxx/**
             client/android/app/build/reports/**
           if-no-files-found: ignore
