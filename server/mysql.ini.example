@@ -1,0 +1,8 @@
+; Copy to server/mysql.ini and fill in. Only needed for the MySQL build
+; (tools/server-build.sh --mysql); the default SQLite build ignores this file.
+;
+; server/mysql.ini is git-ignored so credentials never reach the repository.
+hostname = 127.0.0.1
+username = gtasan
+password = CHANGE_ME
+database = gtasan

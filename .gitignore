@@ -34,3 +34,19 @@ DerivedData/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# --- game server -------------------------------------------------------------
+# Downloaded by tools/server-setup.sh, or produced at runtime.
+vendor/
+server/omp-server
+server/components/
+server/plugins/
+server/gamemodes/*.amx
+server/pawn/core/db_driver.inc
+server/*.db
+server/*.db-wal
+server/*.db-shm
+server/log.txt
+server/logs/
+server/bans.json
+server/mysql.ini

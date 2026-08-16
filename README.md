@@ -10,9 +10,12 @@ Phần source client được đưa vào `client/android/`, pin ở commit `5e53
 
 | Phần | Trạng thái |
 |---|---|
-| Android — hạ tầng build | ✅ Xong, build qua GitHub Actions hoặc `tools/build-apk.sh` |
-| Android — launcher (danh sách server, nickname, settings) | 🚧 Đang làm |
-| iOS | ⚠️ Chỉ có khung, chưa chạy được — xem [`docs/ios.md`](docs/ios.md) |
+| Server + 25 nghề nghiệp | ✅ Biên dịch được, cả SQLite lẫn MySQL — xem [`docs/SERVER.md`](docs/SERVER.md) |
+| Panel cho player (`/menu` + nút MENU trong game) | ✅ Xong |
+| Android — hạ tầng build | ✅ Build qua GitHub Actions hoặc `tools/build-apk.sh` |
+| Android — launcher (danh sách server) | 🚧 Mới có nickname; danh sách server làm sau |
+| Mic in-game | 🚧 Client đã có sẵn code SampVoice nhưng đang bị tắt — đang bật lại |
+| iOS | ⚠️ Chưa bắt đầu |
 
 ## Bạn cần gì để chơi
 
@@ -27,13 +30,23 @@ Phần source client được đưa vào `client/android/`, pin ở commit `5e53
 
 ```
 client/android/     Source client + launcher (Java + C++/NDK, Gradle)
-client/ios/         Khung Xcode (chưa chạy được)
-tools/              Script build và tải thư viện native
+server/             Server open.mp + gamemode Pawn (nghề nghiệp, panel, kinh tế)
+tools/              Script build cho cả client lẫn server
 docs/               Hướng dẫn build và ghi chú kỹ thuật
 .github/workflows/  CI build APK
 ```
 
 ## Build nhanh
+
+Server:
+
+```bash
+tools/server-setup.sh       # tải pawncc, include, open.mp server
+tools/server-build.sh       # biên dịch gamemode
+cd server && ./omp-server
+```
+
+Client Android:
 
 ```bash
 tools/fetch-prebuilt.sh     # tải các thư viện native dựng sẵn

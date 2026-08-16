@@ -36,6 +36,10 @@ ButtonPanel::ButtonPanel()
 	CButton* m_bD = new CButton("D", UISettings::fontSize() / 2);
 	CButton* m_bUSE = new CButton("USE", UISettings::fontSize() / 2);
 	CButton* m_b2 = new CButton("2", UISettings::fontSize() / 2);
+	// Opens the server-side player panel. The menu itself lives in the
+	// gamemode and renders through the normal dialog path, so changing it
+	// never means shipping a new APK.
+	CButton* m_bMenu = new CButton("MENU", UISettings::fontSize() / 2);
 
 
     m_bSV->setCallback([]()
@@ -82,10 +86,12 @@ ButtonPanel::ButtonPanel()
 	m_bG->setCallback([m_bG]() { if(m_bG->visible()) bNeedEnterVehicle = true; });
 	//m_bFOOD->setCallback([]() { pGame->FindPlayerPed()->SetCuffedOrCarry(1, 0); pGame->FindPlayerPed()->ProcessCuffAndCarry(); });
 	m_bGPS->setCallback([]() { pNetGame->SendChatCommand("/gps"); });
+	m_bMenu->setCallback([]() { if (pNetGame) pNetGame->SendChatCommand("/menu"); });
 	m_bD->setCallback([]() { LocalPlayerKeys.bKeys[ePadKeys::KEY_SUBMISSION] = true; });
 	m_bUSE->setCallback([]() { LocalPlayerKeys.bKeys[ePadKeys::KEY_ANALOG_LEFT] = true; });
 	m_b2->setCallback([m_b2]() { if(m_b2->visible()) LocalPlayerKeys.bKeys[ePadKeys::KEY_SUBMISSION] = true; });
 	this->addChild(m_bClose);
+	this->addChild(m_bMenu);
     //this->addChild(m_bBind);
 	this->addChild(m_bTab);
     this->addChild(m_bAlt);

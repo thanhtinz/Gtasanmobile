@@ -1,0 +1,31 @@
+{
+	"name": "GTA:SA Mobile Online",
+	"language": "Vietnamese",
+	"website": "",
+	"max_players": 100,
+	"sleep": 5.0,
+	"announce": false,
+	"enable_zone_names": false,
+	"use_player_ped_anims": true,
+	"chat_input_filter": true,
+	"logging": {
+		"enable": true,
+		"file": "log.txt",
+		"timestamp": true
+	},
+	"network": {
+		"port": 7777,
+		"stream_radius": 300.0,
+		"stream_rate": 1000,
+		"allow_037_clients": true
+	},
+	"rcon": {
+		"enable": true,
+		"password": "CHANGE_ME"
+	},
+	"pawn": {
+		"main_scripts": ["gtasan 1"],
+		"legacy_plugins": [],
+		"side_scripts": []
+	}
+}
