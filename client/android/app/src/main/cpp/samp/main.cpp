@@ -426,8 +426,13 @@ void LogVoice(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		//sprintf(buffer, "/storage/emulated/0/Android/media/com.gta.game/SAMP/%s", SV::kLogFileName);
-		flLog = fopen(buffer, "w");
+		// The path used to be built by a sprintf that is commented out just
+		// above, which left fopen reading an uninitialised stack buffer as a
+		// filename. Building it here keeps the voice log with the client's
+		// other files.
+		char path[0xFF];
+		snprintf(path, sizeof path, "%svoice.txt", pszStorage);
+		flLog = fopen(path, "w");
 	}
 
 	memset(buffer, 0, sizeof(buffer));
@@ -437,7 +442,7 @@ void LogVoice(const char* fmt, ...)
 	vsnprintf(buffer, sizeof(buffer), fmt, arg);
 	va_end(arg);
 
-	__android_log_write(ANDROID_LOG_INFO, "AXL", buffer);
+	Platform::LogLine(Platform::LogLevel::Info, "AXL", buffer);
 
 	if (flLog == nullptr) return;
 	fprintf(flLog, "%s\n", buffer);
