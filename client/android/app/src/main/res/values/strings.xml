@@ -5,6 +5,14 @@
     <string name="client_name">SA:MP 2.11 </string>
     <string name="bug_info">Found a bug? Report it, and I\'ll fix it!</string>
     <string name="authors">thanks to bkuzn and afobazl</string>
+    <string name="author_link">https://t.me/kuzia15</string>
+
+    <!-- Launcher permission messages. These were hardcoded Russian literals in
+         MainActivity; moving them here makes them translatable. -->
+    <string name="error_no_storage_access">Khong co quyen truy cap bo nho. Khong the khoi dong game.</string>
+    <string name="need_storage_access">Game can quyen truy cap bo nho de chay.</string>
+    <string name="need_manage_storage">Ung dung can quyen quan ly toan bo bo nho.</string>
+    <string name="warn_no_microphone">Khong co quyen micro — voice chat se khong hoat dong.</string>
     <string name="downloaderAssetsHeader">Preparing assets:</string>
     <string name="downloaderError">Error</string>
     <string name="downloaderNoData">Game Data was either not installed or was deleted. Please connect to the internet and relaunch so it can download!</string>

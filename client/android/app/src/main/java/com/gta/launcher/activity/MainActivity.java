@@ -32,6 +32,20 @@ public class MainActivity extends AppCompatActivity {
     private Button startButton;
     private TextView title1, title2, authorText, cacheText;
     private boolean storagePermissionGranted = false;
+    private boolean microphoneRequested = false;
+
+    private final ActivityResultLauncher<String> requestMicrophonePermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) {
+                    Log.d("MainActivity", "Microphone permission granted");
+                } else {
+                    Log.w("MainActivity", "Microphone permission denied, voice chat will be unavailable");
+                    Toast.makeText(this, R.string.warn_no_microphone, Toast.LENGTH_LONG).show();
+                }
+                // Either answer is fine — the game starts regardless, just
+                // without voice if the player declined.
+                startGameIfReady();
+            });
 
     private final ActivityResultLauncher<String[]> requestStoragePermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
@@ -50,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     storagePermissionGranted = false;
                     Log.e("MainActivity", "Storage permissions denied");
-                    Toast.makeText(this, "Для работы игры необходим доступ к хранилищу", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.need_storage_access, Toast.LENGTH_LONG).show();
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                         requestManageStoragePermission();
@@ -68,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         storagePermissionGranted = false;
                         Log.e("MainActivity", "Manage storage permission denied");
-                        Toast.makeText(this, "Приложение требует полный доступ к хранилищу", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.need_manage_storage, Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -153,12 +167,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void startGameIfReady() {
-        if (storagePermissionGranted) {
-            startGame();
-        } else {
-            Toast.makeText(this, "Нет доступа к хранилищу. Игра не может быть запущена.", Toast.LENGTH_LONG).show();
+    /**
+     * Asks for the microphone once, for in-game voice chat.
+     *
+     * RECORD_AUDIO is declared in the manifest but nothing ever requested it,
+     * so on Android 6.0+ BASS_RecordInit failed and voice could not work at
+     * all. It is deliberately not a gate on launching: a player who says no
+     * just plays without a microphone.
+     */
+    private boolean requestMicrophonePermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || microphoneRequested) {
+            return false;
         }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+
+        microphoneRequested = true;
+        requestMicrophonePermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO);
+        return true;
+    }
+
+    private void startGameIfReady() {
+        if (!storagePermissionGranted) {
+            Toast.makeText(this, R.string.error_no_storage_access, Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Ask for the microphone before the game takes over the screen; the
+        // launcher callback comes straight back here once the player answers.
+        if (requestMicrophonePermissionIfNeeded()) {
+            return;
+        }
+        startGame();
     }
 
     private void setFullScreenMode() {
@@ -250,8 +291,11 @@ public class MainActivity extends AppCompatActivity {
                                 })
                                 .start();
 
+                        // Goes through startGameIfReady so the microphone
+                        // prompt appears here, in the launcher, rather than on
+                        // top of the game.
                         if (storagePermissionGranted) {
-                            startGame();
+                            startGameIfReady();
                         } else {
                             checkAndRequestStoragePermission();
                         }
@@ -266,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     try {
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("https://t.me/kuzia15"));
+                                Uri.parse(getString(R.string.author_link)));
                         startActivity(browserIntent);
                     } catch (Exception e) {
                         Log.e("MainActivity", "Error opening tg: " + e.getMessage());

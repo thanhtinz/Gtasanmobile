@@ -2,6 +2,15 @@
 
 #define MAX_SETTINGS_STRING	0x7F
 
+// Server the client connects to when settings.ini does not say otherwise.
+// Point these at your own server — upstream shipped the original author's
+// address here, which meant every build connected to their server by default.
+#define SAMP_DEFAULT_HOST	"127.0.0.1"
+#define SAMP_DEFAULT_PORT	7777
+
+#define SAMP_SETTINGS_DIR	"/storage/emulated/0/GTA/SAMP"
+#define SAMP_SETTINGS_PATH	SAMP_SETTINGS_DIR "/settings.ini"
+
 struct stSettings
 {
 	// client

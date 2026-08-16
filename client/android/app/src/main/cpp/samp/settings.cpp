@@ -5,22 +5,67 @@
 #include "vendor/SimpleIni/SimpleIni.h"
 #include "game/game.h"
 
+#include <sys/stat.h>
+#include <unistd.h>
+
 extern CGame *pGame;
+
+// Writes a minimal settings file for a fresh install. Only the keys a player
+// would want to change are listed; INIReader falls back to the defaults below
+// for everything else, so this stays short instead of mirroring the whole
+// struct.
+static void WriteDefaultSettings(const char* path)
+{
+	mkdir("/storage/emulated/0/GTA", 0777);
+	mkdir(SAMP_SETTINGS_DIR, 0777);
+
+	FILE* file = fopen(path, "w");
+	if (file == nullptr)
+	{
+		Log("Error: can't create %s", path);
+		return;
+	}
+
+	fprintf(file,
+		"[client]\n"
+		"name=Player%d\n"
+		"host=%s\n"
+		"port=%d\n"
+		"password=\n"
+		"version=0.3.7\n"
+		"\n"
+		"[gui]\n"
+		"VoiceChatEnable=false\n",
+		rand() % 10000, SAMP_DEFAULT_HOST, SAMP_DEFAULT_PORT);
+
+	fclose(file);
+	Log("Created default settings at %s", path);
+}
 
 CSettings::CSettings()
 {
-	Log("Loading settings..");	
+	Log("Loading settings..");
 
 	char buff[0x7F];
-	sprintf(buff, "/storage/emulated/0/GTA/SAMP/settings.ini");
+	snprintf(buff, sizeof buff, "%s", SAMP_SETTINGS_PATH);
+
+	// A missing settings.ini used to reach std::terminate() below, so a fresh
+	// install died on launch with nothing in the log to explain it. Writing the
+	// defaults out first turns that into an ordinary first run.
+	if (access(buff, F_OK) != 0)
+	{
+		Log("%s not found, creating it", buff);
+		WriteDefaultSettings(buff);
+	}
 
 	INIReader reader(buff);
 
 	if(reader.ParseError() < 0)
 	{
-		Log("Error: can't load %s", buff);
-		std::terminate();
-		return;
+		// Still not readable — a corrupt file, or storage permission was never
+		// granted. Every reader.Get() below returns its fallback in that case,
+		// so the client starts on built-in defaults rather than crashing.
+		Log("Warning: can't parse %s, using built-in defaults", buff);
 	}
 
 	// client
@@ -28,13 +73,13 @@ CSettings::CSettings()
 	sprintf(buff, "__android_%d%d", rand() % 1000, rand() % 1000);
 	length = reader.Get("client", "name", buff).copy(m_Settings.szNickName, 24);
 	m_Settings.szNickName[length] = '\0';
-	length = reader.Get("client", "host", "141.95.234.17").copy(m_Settings.szHost, MAX_SETTINGS_STRING);
+	length = reader.Get("client", "host", SAMP_DEFAULT_HOST).copy(m_Settings.szHost, MAX_SETTINGS_STRING);
 	m_Settings.szHost[length] = '\0';
 	length = reader.Get("client", "password", "").copy(m_Settings.szPassword, MAX_SETTINGS_STRING);
 	m_Settings.szPassword[length] = '\0';
     length = reader.Get("client", "version", "0.3.7").copy(m_Settings.szVersion, MAX_SETTINGS_STRING);
     m_Settings.szVersion[length] = '\0';
-	m_Settings.iPort = reader.GetInteger("client", "port", 1417);
+	m_Settings.iPort = reader.GetInteger("client", "port", SAMP_DEFAULT_PORT);
     m_Settings.bAutoAim = reader.GetBoolean("client", "autoaim", false);
 
 	// debug
