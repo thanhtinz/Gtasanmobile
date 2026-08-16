@@ -3,6 +3,7 @@
 #include <syscall.h>
 
 #include "main.h"
+#include "platform/api.h"
 #include "game/game.h"
 #include "net/netgame.h"
 #include "gui/gui.h"
@@ -34,7 +35,8 @@ Peerapol Unarak
 JavaVM* javaVM;
 
 
-char* g_pszStorage = "/storage/emulated/0/GTA/";
+// Filled from the platform layer at startup; see Platform::DataPath().
+char* g_pszStorage = const_cast<char*>(Platform::DataPath());
 
 UI* pUI = nullptr;
 CGame *pGame = nullptr;
@@ -395,7 +397,7 @@ void Log(const char* fmt, ...)
 
 	if (flLog == nullptr && pszStorage != nullptr)
 	{
-		sprintf(buffer, "/storage/emulated/0/GTA/logcat.txt");
+		sprintf(buffer, "%slogcat.txt", Platform::DataPath());
 		flLog = fopen(buffer, "a");
 	}
 

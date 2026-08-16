@@ -5,7 +5,8 @@
 #include "vendor/SimpleIni/SimpleIni.h"
 #include "game/game.h"
 
-#include <sys/stat.h>
+#include "platform/api.h"
+
 #include <unistd.h>
 
 extern CGame *pGame;
@@ -16,8 +17,7 @@ extern CGame *pGame;
 // struct.
 static void WriteDefaultSettings(const char* path)
 {
-	mkdir("/storage/emulated/0/GTA", 0777);
-	mkdir(SAMP_SETTINGS_DIR, 0777);
+	Platform::EnsureDirectory(Platform::ConfigPath());
 
 	FILE* file = fopen(path, "w");
 	if (file == nullptr)
@@ -47,7 +47,7 @@ CSettings::CSettings()
 	Log("Loading settings..");
 
 	char buff[0x7F];
-	snprintf(buff, sizeof buff, "%s", SAMP_SETTINGS_PATH);
+	snprintf(buff, sizeof buff, "%s%s", Platform::ConfigPath(), SAMP_SETTINGS_FILE);
 
 	// A missing settings.ini used to reach std::terminate() below, so a fresh
 	// install died on launch with nothing in the log to explain it. Writing the

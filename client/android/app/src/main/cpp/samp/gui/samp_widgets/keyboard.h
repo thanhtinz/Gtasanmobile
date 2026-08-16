@@ -1,7 +1,6 @@
 #pragma once
 
 #include <list>
-#include <jni.h>
 
 class KeyboardInput : public Widget
 {

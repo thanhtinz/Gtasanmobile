@@ -1,4 +1,5 @@
 #include <GLES2/gl2.h>
+#include "platform/api.h"
 #include "../main.h"
 #include "../vendor/armhook/patch.h"
 #include "game.h"
@@ -1382,7 +1383,7 @@ void ApplyFPSPatch(uint8_t fps);
 void (*NvUtilInit)();
 void NvUtilInit_hook() {
     Log("NvUtilInit");
-    g_pszStorage = "/storage/emulated/0/GTA/";
+    g_pszStorage = const_cast<char*>(Platform::DataPath());
 
     LOGI("Storage located at %s", g_pszStorage);
     NvUtilInit();
@@ -1403,7 +1404,7 @@ stFile* NvFOpen(const char *r1)
 {
     LOGI("NvFOpen %s", r1);
     strcpy(lastFile, r1);
-    g_pszStorage = "/storage/emulated/0/GTA/";
+    g_pszStorage = const_cast<char*>(Platform::DataPath());
     static char path[255]{};
     memset(path, 0, sizeof(path));
 

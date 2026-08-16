@@ -2,26 +2,17 @@
 // Created by roman on 11/19/2024.
 //
 
-#include <dlfcn.h>
 #include "CUtil.h"
 #include "game/Textures/TextureDatabaseRuntime.h"
+#include "platform/api.h"
 
 
 uintptr_t CUtil::FindLib(const char* libname)
 {
-    void* handle = dlopen(libname, RTLD_LAZY);
-    if (handle) {
-        void* symbol = dlsym(handle, "JNI_OnLoad");
-        if (symbol) {
-            Dl_info info;
-            if (dladdr(symbol, &info) != 0) {
-                return reinterpret_cast<uintptr_t>(info.dli_fbase);
-            }
-        }
-        dlclose(handle);
-    }
-
-    return 0;
+    // How a module base is found differs completely between platforms — a
+    // dlopen/dladdr pair here, a dyld image walk on iOS — so the mechanism
+    // lives behind the platform layer and this stays a name lookup.
+    return Platform::ModuleBase(libname);
 }
 
 RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)

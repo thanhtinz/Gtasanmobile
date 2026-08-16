@@ -8,8 +8,9 @@
 #define SAMP_DEFAULT_HOST	"127.0.0.1"
 #define SAMP_DEFAULT_PORT	7777
 
-#define SAMP_SETTINGS_DIR	"/storage/emulated/0/GTA/SAMP"
-#define SAMP_SETTINGS_PATH	SAMP_SETTINGS_DIR "/settings.ini"
+// The settings file lives under Platform::ConfigPath(); the name is all that
+// is fixed, because the directory differs per platform.
+#define SAMP_SETTINGS_FILE	"settings.ini"
 
 struct stSettings
 {
