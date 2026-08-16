@@ -15,7 +15,7 @@ Phần source client được đưa vào `client/android/`, pin ở commit `5e53
 | Android — hạ tầng build | ✅ Build qua GitHub Actions hoặc `tools/build-apk.sh` |
 | Android — launcher (danh sách server) | 🚧 Mới có nickname; danh sách server làm sau |
 | Mic in-game | 🚧 Client đã có sẵn code SampVoice nhưng đang bị tắt — đang bật lại |
-| iOS | ⚠️ Chưa bắt đầu |
+| iOS | ⚠️ Chưa chạy được. Đã tách lớp nền tảng để mở đường — xem [`docs/IOS.md`](docs/IOS.md) |
 
 ## Bạn cần gì để chơi
 
