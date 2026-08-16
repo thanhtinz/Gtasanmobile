@@ -1,0 +1,86 @@
+name: Android
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      build_release:
+        description: "Also build a release APK"
+        type: boolean
+        default: false
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Must match `ndkVersion` in client/android/app/build.gradle.kts. The
+      # runner image ships a different NDK, so the exact version is installed
+      # rather than left to whatever happens to be preinstalled.
+      - name: Install NDK 26.2.11394342
+        run: sdkmanager --install "ndk;26.2.11394342" "cmake;3.22.1"
+
+      - name: Fetch prebuilt native libraries
+        run: ./tools/fetch-prebuilt.sh
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: client/android
+
+      - name: Build debug APK
+        working-directory: client/android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Build release APK
+        if: github.event_name == 'workflow_dispatch' && inputs.build_release
+        working-directory: client/android
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-debug
+          path: client/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload release APK
+        if: github.event_name == 'workflow_dispatch' && inputs.build_release
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-release-unsigned
+          path: client/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      # Native build logs are where CMake/NDK failures actually explain
+      # themselves; without this a red build gives you almost nothing to go on.
+      - name: Upload native build logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-build-logs
+          path: |
+            client/android/app/.cxx/**/*.txt
+            client/android/app/build/reports/**
+          if-no-files-found: ignore

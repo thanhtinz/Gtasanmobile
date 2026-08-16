@@ -1,0 +1,36 @@
+# --- prebuilt native libraries -----------------------------------------------
+# Fetched by tools/fetch-prebuilt.sh, never committed. libGame.so in particular
+# is Rockstar's GTA:SA engine and does not belong in this repository.
+client/android/app/src/main/jniLibs/
+
+# --- Firebase ----------------------------------------------------------------
+# The build no longer needs this; the guard stops the upstream author's config
+# (which carries their live API key) from being committed by accident.
+google-services.json
+
+# --- Gradle / Android --------------------------------------------------------
+.gradle/
+build/
+.cxx/
+.externalNativeBuild/
+local.properties
+captures/
+*.apk
+*.aab
+*.aar
+*.jks
+*.keystore
+keystore.properties
+
+# --- Xcode -------------------------------------------------------------------
+xcuserdata/
+*.xcuserstate
+DerivedData/
+*.ipa
+
+# --- Editors / OS ------------------------------------------------------------
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

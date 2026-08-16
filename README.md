@@ -1,0 +1,68 @@
+# GTA:SA Mobile
+
+Client SA-MP cho GTA: San Andreas trên di động, kèm launcher riêng.
+
+Dự án dựa trên [`kuzia15/SAMP-Mobile`](https://github.com/kuzia15/SAMP-Mobile) nhánh `GTA-2.11`
+(tác giả gốc: [bkuzn2](https://github.com/bkuzn2) và [kuzia15](https://github.com/kuzia15)).
+Phần source client được đưa vào `client/android/`, pin ở commit `5e53151`.
+
+## Trạng thái
+
+| Phần | Trạng thái |
+|---|---|
+| Android — hạ tầng build | ✅ Xong, build qua GitHub Actions hoặc `tools/build-apk.sh` |
+| Android — launcher (danh sách server, nickname, settings) | 🚧 Đang làm |
+| iOS | ⚠️ Chỉ có khung, chưa chạy được — xem [`docs/ios.md`](docs/ios.md) |
+
+## Bạn cần gì để chơi
+
+1. **Máy Android ARM64, Android 8.0 trở lên.** Client này chỉ build cho `arm64-v8a`.
+2. **Bản GTA: San Andreas cho Android của chính bạn.** Repo này không chứa và
+   không phát tán game data của Rockstar. Bạn cần tự trích xuất từ bản game hợp
+   pháp mà bạn sở hữu, rồi chép vào `/storage/emulated/0/GTA/`.
+3. **File APK.** Tải từ artifact của GitHub Actions, hoặc tự build theo
+   [`docs/BUILD.md`](docs/BUILD.md).
+
+## Bố cục repo
+
+```
+client/android/     Source client + launcher (Java + C++/NDK, Gradle)
+client/ios/         Khung Xcode (chưa chạy được)
+tools/              Script build và tải thư viện native
+docs/               Hướng dẫn build và ghi chú kỹ thuật
+.github/workflows/  CI build APK
+```
+
+## Build nhanh
+
+```bash
+tools/fetch-prebuilt.sh     # tải các thư viện native dựng sẵn
+tools/build-apk.sh          # build APK debug
+```
+
+Chi tiết và cách xử lý lỗi thường gặp: [`docs/BUILD.md`](docs/BUILD.md).
+
+Không muốn cài Android SDK thì push nhánh lên, CI sẽ build và đính APK vào
+artifact của workflow run.
+
+## Khác gì so với upstream
+
+- **Gỡ Firebase.** Upstream không build được nếu thiếu `google-services.json`
+  của tác giả gốc, trong khi mọi lời gọi Firebase phía Java đều đã bị comment
+  từ trước. Đã bỏ plugin, dependency và các permission liên quan.
+- **Không commit thư viện native dựng sẵn.** `libGame.so` là engine GTA:SA của
+  Rockstar; `tools/fetch-prebuilt.sh` tải về lúc build thay vì để trong repo.
+- **Đóng gói thêm `libGlossHook.so`.** CMake link nó dạng shared library nên
+  `libsamp.so` có `DT_NEEDED` trỏ tới, nhưng upstream không chép vào `jniLibs`.
+- **Sửa icon app.** Manifest đang trỏ `android:icon` vào lớp nền của adaptive
+  icon thay vì chính icon, và thiếu `roundIcon`.
+- **Dọn repository Gradle chết** (Splunk MINT, AppLovin, Sonatype snapshots).
+
+## Giấy phép và bản quyền
+
+Mã nguồn launcher và tooling trong repo này viết cho dự án. Phần client SA-MP
+kế thừa từ upstream — giữ nguyên credit tác giả gốc.
+
+Grand Theft Auto: San Andreas là sản phẩm của Rockstar Games / Take-Two
+Interactive. Dự án này **không** liên kết với họ, **không** phát tán game của
+họ, và **không** thay thế việc mua game. Bạn phải tự sở hữu bản game hợp pháp.
